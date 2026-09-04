@@ -3,7 +3,7 @@
 
 <div class="chrome-head" id="chromeHead">
 	<div class="chrome-head__wrap" id="headWrap">
-		<img class="chrome-head__img" id="srcImg" src="/images/chrome-head.webp" alt="" width="1149" height="1369" />
+		<img class="chrome-head__img" id="srcImg" src="/images/chrome-head.webp" alt="" width="1050" height="1500" />
 		<canvas class="chrome-head__canvas" id="glcanvas" aria-hidden="true"></canvas>
 		<div class="chrome-head__specular" id="specular"></div>
 		<div class="chrome-head__eye chrome-head__eye--left" id="eyeLeft"></div>
@@ -23,7 +23,7 @@
 	.chrome-head__wrap {
 		position: relative;
 		width: min(60vh, 46vw, 480px);
-		aspect-ratio: 1149 / 1369;
+		aspect-ratio: 1050 / 1500;
 		transform-style: preserve-3d;
 		will-change: transform;
 		filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.6));
@@ -67,13 +67,13 @@
 	}
 
 	.chrome-head__eye--left {
-		left: 33.9%;
-		top: 43.5%;
+		left: 17%;
+		top: 43%;
 	}
 
 	.chrome-head__eye--right {
-		left: 49.6%;
-		top: 42.7%;
+		left: 43%;
+		top: 43%;
 	}
 
 	.chrome-head__specular {
@@ -81,8 +81,8 @@
 		width: 38%;
 		height: 38%;
 		border-radius: 50%;
-		left: 50%;
-		top: 40%;
+		left: 30%;
+		top: 42%;
 		transform: translate(-50%, -50%);
 		background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 35%, rgba(255, 255, 255, 0) 70%);
 		mix-blend-mode: screen;
@@ -114,7 +114,7 @@
 		uniform float uAberr;
 
 		void main() {
-			vec2 center = vec2(0.5, 0.42);
+			vec2 center = vec2(0.30, 0.43);
 			vec2 dir = vUv - center;
 
 			float r = texture2D(uTex, vUv + dir * uAberr).r;
@@ -155,7 +155,7 @@
 		const EYE_RADIUS_PX = 3;
 		let targetEyeX = 0, targetEyeY = 0, curEyeX = 0, curEyeY = 0;
 
-		let targetSpecX = 50, targetSpecY = 40, curSpecX = 50, curSpecY = 40;
+		let targetSpecX = 30, targetSpecY = 42, curSpecX = 30, curSpecY = 42;
 		let hovering = false;
 
 		let aberrPulseStart: number | null = null;
