@@ -1,12 +1,14 @@
 ---
+import ChromeHead from './ChromeHead.astro';
 ---
 
 <section class="hero" id="top">
 	<div class="container hero__inner">
-		<div class="hero__portrait" role="img" aria-label="Chrome head placeholder — hero visual arrives in a later stage"></div>
+		<ChromeHead />
 		<h1 class="hero__name">Malcolm Clottey</h1>
 		<p class="hero__role">Software Engineer</p>
 		<p class="hero__value">Building full-stack, AI-powered, and cloud-deployed systems.</p>
+		<p class="hero__scroll-cue" aria-hidden="true">↓</p>
 	</div>
 </section>
 
@@ -21,14 +23,6 @@
 		align-items: center;
 		text-align: center;
 		gap: var(--space-6);
-	}
-
-	.hero__portrait {
-		width: min(60vh, 46vw, 480px);
-		aspect-ratio: 1149 / 1369;
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
 	}
 
 	.hero__name {
@@ -46,5 +40,27 @@
 		max-width: 32ch;
 		font-size: var(--text-base);
 		color: var(--color-text-secondary);
+	}
+
+	.hero__scroll-cue {
+		margin-top: var(--space-8);
+		color: var(--color-text-secondary);
+		font-size: var(--text-lg);
+		animation: bob 2s var(--ease-apple) infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero__scroll-cue {
+			animation: none;
+		}
+	}
+
+	@keyframes bob {
+		0%, 100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(6px);
+		}
 	}
 </style>

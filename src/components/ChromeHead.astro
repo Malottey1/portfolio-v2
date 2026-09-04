@@ -1,0 +1,343 @@
+---
+---
+
+<div class="chrome-head" id="chromeHead">
+	<div class="chrome-head__wrap" id="headWrap">
+		<img class="chrome-head__img" id="srcImg" src="/images/chrome-head.webp" alt="" width="1149" height="1369" />
+		<canvas class="chrome-head__canvas" id="glcanvas" aria-hidden="true"></canvas>
+		<div class="chrome-head__specular" id="specular"></div>
+		<div class="chrome-head__eye chrome-head__eye--left" id="eyeLeft"></div>
+		<div class="chrome-head__eye chrome-head__eye--right" id="eyeRight"></div>
+	</div>
+</div>
+
+<style>
+	.chrome-head {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		perspective: 1200px;
+	}
+
+	.chrome-head__wrap {
+		position: relative;
+		width: min(60vh, 46vw, 480px);
+		aspect-ratio: 1149 / 1369;
+		transform-style: preserve-3d;
+		will-change: transform;
+		filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.6));
+	}
+
+	.chrome-head__img,
+	.chrome-head__canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: contain;
+	}
+
+	.chrome-head__canvas {
+		opacity: 0;
+		transition: opacity var(--duration-normal) var(--ease-apple);
+	}
+
+	.chrome-head__canvas.is-ready {
+		opacity: 1;
+	}
+
+	.chrome-head__eye {
+		position: absolute;
+		width: 3.2%;
+		height: 3.2%;
+		border-radius: 50%;
+		background: radial-gradient(circle at 35% 30%, #ffffff, #cfd3d8 45%, #6b6f76 100%);
+		box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.5);
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+		mix-blend-mode: screen;
+		opacity: 0;
+		transition: opacity var(--duration-normal) var(--ease-apple);
+	}
+
+	.chrome-head__canvas.is-ready ~ .chrome-head__eye {
+		opacity: 0.9;
+	}
+
+	.chrome-head__eye--left {
+		left: 33.9%;
+		top: 43.5%;
+	}
+
+	.chrome-head__eye--right {
+		left: 49.6%;
+		top: 42.7%;
+	}
+
+	.chrome-head__specular {
+		position: absolute;
+		width: 38%;
+		height: 38%;
+		border-radius: 50%;
+		left: 50%;
+		top: 40%;
+		transform: translate(-50%, -50%);
+		background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 35%, rgba(255, 255, 255, 0) 70%);
+		mix-blend-mode: screen;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.25s ease;
+	}
+</style>
+
+<script>
+	const vertSrc = `
+		attribute vec2 aPos;
+		varying vec2 vUv;
+		void main() {
+			vUv = aPos * 0.5 + 0.5;
+			vUv.y = 1.0 - vUv.y;
+			gl_Position = vec4(aPos, 0.0, 1.0);
+		}
+	`;
+
+	// Radial chromatic aberration: each channel sampled with a slightly different
+	// UV offset along the vector from the head's optical center to the pixel.
+	// uAberr animates in fast on pointer-enter, then decays to a small resting
+	// value — a "delight" pulse rather than a constant distracting effect.
+	const fragSrc = `
+		precision highp float;
+		varying vec2 vUv;
+		uniform sampler2D uTex;
+		uniform float uAberr;
+
+		void main() {
+			vec2 center = vec2(0.5, 0.42);
+			vec2 dir = vUv - center;
+
+			float r = texture2D(uTex, vUv + dir * uAberr).r;
+			float g = texture2D(uTex, vUv).g;
+			float b = texture2D(uTex, vUv - dir * uAberr).b;
+
+			gl_FragColor = vec4(r, g, b, 1.0);
+		}
+	`;
+
+	function compileShader(gl: WebGLRenderingContext, type: number, src: string) {
+		const shader = gl.createShader(type)!;
+		gl.shaderSource(shader, src);
+		gl.compileShader(shader);
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			console.error(gl.getShaderInfoLog(shader));
+		}
+		return shader;
+	}
+
+	function setupChromeHead(root: HTMLElement) {
+		const wrap = root.querySelector<HTMLElement>('#headWrap')!;
+		const canvas = root.querySelector<HTMLCanvasElement>('#glcanvas')!;
+		const specular = root.querySelector<HTMLElement>('#specular')!;
+		const eyeLeft = root.querySelector<HTMLElement>('#eyeLeft')!;
+		const eyeRight = root.querySelector<HTMLElement>('#eyeRight')!;
+		const img = root.querySelector<HTMLImageElement>('#srcImg')!;
+
+		const gl = canvas.getContext('webgl', { premultipliedAlpha: false });
+		if (!gl) return; // no WebGL: the static <img> underneath stays visible
+
+		let program: WebGLProgram;
+		let texture: WebGLTexture;
+
+		const MAX_TILT = 10;
+		let targetRX = 0, targetRY = 0, curRX = 0, curRY = 0;
+
+		const EYE_RADIUS_PX = 3;
+		let targetEyeX = 0, targetEyeY = 0, curEyeX = 0, curEyeY = 0;
+
+		let targetSpecX = 50, targetSpecY = 40, curSpecX = 50, curSpecY = 40;
+		let hovering = false;
+
+		let aberrPulseStart: number | null = null;
+		let curAberr = 0;
+		const ABERR_PEAK = 0.02;
+		const ABERR_REST = 0.0015;
+		const ABERR_DECAY = 3.2;
+
+		let rafId: number | null = null;
+		let listenersAttached = false;
+
+		function resize() {
+			const rect = wrap.getBoundingClientRect();
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			canvas.width = Math.round(rect.width * dpr);
+			canvas.height = Math.round(rect.height * dpr);
+			gl!.viewport(0, 0, canvas.width, canvas.height);
+		}
+
+		function initGL() {
+			const vs = compileShader(gl!, gl!.VERTEX_SHADER, vertSrc);
+			const fs = compileShader(gl!, gl!.FRAGMENT_SHADER, fragSrc);
+			program = gl!.createProgram()!;
+			gl!.attachShader(program, vs);
+			gl!.attachShader(program, fs);
+			gl!.linkProgram(program);
+			gl!.useProgram(program);
+
+			const quad = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
+			const buf = gl!.createBuffer();
+			gl!.bindBuffer(gl!.ARRAY_BUFFER, buf);
+			gl!.bufferData(gl!.ARRAY_BUFFER, quad, gl!.STATIC_DRAW);
+			const aPos = gl!.getAttribLocation(program, 'aPos');
+			gl!.enableVertexAttribArray(aPos);
+			gl!.vertexAttribPointer(aPos, 2, gl!.FLOAT, false, 0, 0);
+
+			texture = gl!.createTexture()!;
+			gl!.bindTexture(gl!.TEXTURE_2D, texture);
+			gl!.texImage2D(gl!.TEXTURE_2D, 0, gl!.RGBA, gl!.RGBA, gl!.UNSIGNED_BYTE, img);
+			gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_S, gl!.CLAMP_TO_EDGE);
+			gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_WRAP_T, gl!.CLAMP_TO_EDGE);
+			gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.LINEAR);
+			gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.LINEAR);
+
+			resize();
+			window.addEventListener('resize', resize);
+			canvas.classList.add('is-ready');
+			startLoop();
+		}
+
+		function onMove(clientX: number, clientY: number) {
+			const rect = wrap.getBoundingClientRect();
+			const nx = (clientX - rect.left) / rect.width - 0.5;
+			const ny = (clientY - rect.top) / rect.height - 0.5;
+
+			targetRY = nx * MAX_TILT * 2;
+			targetRX = -ny * MAX_TILT * 2;
+
+			targetEyeX = nx * 2 * EYE_RADIUS_PX;
+			targetEyeY = ny * 2 * EYE_RADIUS_PX;
+
+			targetSpecX = (nx + 0.5) * 100;
+			targetSpecY = (ny + 0.5) * 100;
+		}
+
+		function onMouseMove(e: MouseEvent) {
+			onMove(e.clientX, e.clientY);
+		}
+		function onTouchMove(e: TouchEvent) {
+			if (e.touches[0]) onMove(e.touches[0].clientX, e.touches[0].clientY);
+		}
+		function onMouseLeave() {
+			targetRX = 0;
+			targetRY = 0;
+			targetEyeX = 0;
+			targetEyeY = 0;
+			hovering = false;
+			specular.style.opacity = '0';
+		}
+		function onMouseEnter() {
+			hovering = true;
+			specular.style.opacity = '1';
+			aberrPulseStart = performance.now() / 1000;
+		}
+		function onTouchStart() {
+			aberrPulseStart = performance.now() / 1000;
+		}
+
+		function attachListeners() {
+			if (listenersAttached) return;
+			listenersAttached = true;
+			root.addEventListener('mousemove', onMouseMove);
+			root.addEventListener('touchmove', onTouchMove, { passive: true });
+			root.addEventListener('mouseleave', onMouseLeave);
+			wrap.addEventListener('mouseenter', onMouseEnter);
+			wrap.addEventListener('touchstart', onTouchStart, { passive: true });
+		}
+
+		function detachListeners() {
+			if (!listenersAttached) return;
+			listenersAttached = false;
+			root.removeEventListener('mousemove', onMouseMove);
+			root.removeEventListener('touchmove', onTouchMove);
+			root.removeEventListener('mouseleave', onMouseLeave);
+			wrap.removeEventListener('mouseenter', onMouseEnter);
+			wrap.removeEventListener('touchstart', onTouchStart);
+		}
+
+		function render() {
+			curRX += (targetRX - curRX) * 0.08;
+			curRY += (targetRY - curRY) * 0.08;
+			curEyeX += (targetEyeX - curEyeX) * 0.15;
+			curEyeY += (targetEyeY - curEyeY) * 0.15;
+			curSpecX += (targetSpecX - curSpecX) * 0.12;
+			curSpecY += (targetSpecY - curSpecY) * 0.12;
+
+			wrap.style.transform = `rotateX(${curRX}deg) rotateY(${curRY}deg)`;
+			eyeLeft.style.transform = `translate(calc(-50% + ${curEyeX}px), calc(-50% + ${curEyeY}px))`;
+			eyeRight.style.transform = `translate(calc(-50% + ${curEyeX}px), calc(-50% + ${curEyeY}px))`;
+			specular.style.left = curSpecX + '%';
+			specular.style.top = curSpecY + '%';
+
+			let targetAberr = ABERR_REST;
+			if (aberrPulseStart !== null) {
+				const age = performance.now() / 1000 - aberrPulseStart;
+				if (age < 1.2) {
+					targetAberr = ABERR_REST + (ABERR_PEAK - ABERR_REST) * Math.exp(-age * ABERR_DECAY);
+				}
+			}
+			if (!hovering) targetAberr = 0;
+			curAberr += (targetAberr - curAberr) * 0.25;
+
+			gl!.useProgram(program);
+			gl!.activeTexture(gl!.TEXTURE0);
+			gl!.bindTexture(gl!.TEXTURE_2D, texture);
+			gl!.uniform1i(gl!.getUniformLocation(program, 'uTex'), 0);
+			gl!.uniform1f(gl!.getUniformLocation(program, 'uAberr'), curAberr);
+			gl!.drawArrays(gl!.TRIANGLE_STRIP, 0, 4);
+
+			rafId = requestAnimationFrame(render);
+		}
+
+		function startLoop() {
+			if (rafId === null) rafId = requestAnimationFrame(render);
+		}
+
+		function stopLoop() {
+			if (rafId !== null) {
+				cancelAnimationFrame(rafId);
+				rafId = null;
+			}
+		}
+
+		let glReady = false;
+
+		// Lazily start WebGL + listeners only while the hero is on screen.
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						if (!glReady) {
+							glReady = true;
+							if (img.complete) initGL();
+							else img.onload = initGL;
+						} else {
+							startLoop();
+						}
+						attachListeners();
+					} else {
+						stopLoop();
+						detachListeners();
+					}
+				}
+			},
+			{ threshold: 0 },
+		);
+		observer.observe(root);
+	}
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (!reduceMotion) {
+		const root = document.getElementById('chromeHead');
+		if (root) setupChromeHead(root);
+	}
+</script>
