@@ -1,22 +1,49 @@
 ---
 const roles = [
 	{
-		title: 'Placeholder Role One',
-		org: 'Placeholder Company',
-		dates: '2026 – Present',
-		summary: 'Placeholder summary line for layout testing.',
+		title: 'AI Document Intelligence Extern',
+		org: 'Extern, Inc. (in partnership with Pfizer)',
+		location: 'Remote',
+		dates: 'Jun 2026 – Present',
+		bullets: [
+			'Built AI pipelines processing pharmaceutical vendor files using OCR (Tesseract, PaddleOCR) and RAG for extraction and classification.',
+			'Developed a RAG-based document retrieval system with LlamaIndex, optimized with chunk tuning and open-source LLMs (Mistral, Phi-2).',
+			'Benchmarked OCR accuracy, RAG retrieval quality, and routing performance; delivered a technical report on trade-offs and deployment recommendations, and built a demo UI.',
+		],
 	},
 	{
-		title: 'Placeholder Role Two',
-		org: 'Placeholder Company',
-		dates: '2026',
-		summary: 'Placeholder summary line for layout testing.',
+		title: 'AI Extern',
+		org: 'Extern, Inc. (in partnership with Wayfair)',
+		location: 'Virginia',
+		dates: 'Mar 2026 – May 2026',
+		bullets: [
+			'Built AI agents with n8n automating trend detection, competitor tracking, and marketing content generation across the home goods sector.',
+			'Tracked competitor pricing and campaigns via JavaScript web-scraping scripts feeding structured insights into pricing strategy.',
+			'Built a live-updating Google Sheets dashboard (React + Apps Script) surfacing AI-generated trend signals and competitive benchmarks.',
+		],
 	},
 	{
-		title: 'Placeholder Role Three',
-		org: 'Placeholder Company',
-		dates: '2025',
-		summary: 'Placeholder summary line for layout testing.',
+		title: 'Software Developer Intern',
+		org: 'Tyncad Software Company',
+		dates: 'Jul 2025 – Sep 2025',
+		bullets: [
+			'Engineered full-stack improvements to a live Django/JavaScript platform, integrating redesigned UI with dynamic backend endpoints.',
+			'Refactored front-end assets and minimized HTTP payloads, reducing load times by approximately 40%.',
+		],
+	},
+];
+
+const leadership = [
+	{
+		title: 'Project Manager',
+		org: 'Research Club, Ashesi University',
+		dates: 'Jul 2023 – Oct 2023',
+		summary: 'Led 40+ members, organized research conferences and workshops, managed executive board operations.',
+	},
+	{
+		title: 'Member',
+		org: 'Google Developer Student Club',
+		dates: '2023',
 	},
 ];
 ---
@@ -29,11 +56,29 @@ const roles = [
 				<li class="timeline__item">
 					<p class="timeline__dates">{role.dates}</p>
 					<h3 class="timeline__title">{role.title}</h3>
-					<p class="timeline__org">{role.org}</p>
-					<p class="timeline__summary">{role.summary}</p>
+					<p class="timeline__org">
+						{role.org}
+						{role.location && <> · {role.location}</>}
+					</p>
+					<ul class="timeline__bullets">
+						{role.bullets.map((bullet) => (
+							<li>{bullet}</li>
+						))}
+					</ul>
 				</li>
 			))}
 		</ol>
+
+		<h3 class="timeline__subheading">Leadership</h3>
+		<ul class="leadership">
+			{leadership.map((item) => (
+				<li class="leadership__item">
+					<p class="leadership__title">{item.title} · {item.org}</p>
+					<p class="leadership__dates">{item.dates}</p>
+					{item.summary && <p class="leadership__summary">{item.summary}</p>}
+				</li>
+			))}
+		</ul>
 	</div>
 </section>
 
@@ -43,7 +88,7 @@ const roles = [
 		flex-direction: column;
 		gap: var(--space-8);
 		list-style: none;
-		margin: 0;
+		margin: 0 0 var(--space-16);
 		padding: 0;
 	}
 
@@ -66,10 +111,46 @@ const roles = [
 	.timeline__org {
 		font-size: var(--text-sm);
 		color: var(--color-text-secondary);
-		margin-bottom: var(--space-2);
+		margin-bottom: var(--space-3);
 	}
 
-	.timeline__summary {
+	.timeline__bullets {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin: 0;
+		padding-left: var(--space-4);
+		color: var(--color-text-secondary);
+	}
+
+	.timeline__subheading {
+		font-size: var(--text-sm);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-secondary);
+		margin-bottom: var(--space-4);
+	}
+
+	.leadership {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.leadership__title {
+		font-size: var(--text-base);
+	}
+
+	.leadership__dates {
+		font-size: var(--text-xs);
+		color: var(--color-text-secondary);
+	}
+
+	.leadership__summary {
+		font-size: var(--text-sm);
 		color: var(--color-text-secondary);
 	}
 </style>
