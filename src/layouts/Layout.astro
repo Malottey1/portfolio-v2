@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+const siteUrl = 'https://malcolmclottey.com';
 ---
 
 <html lang="en">
@@ -17,9 +18,49 @@ const { title, description } = Astro.props;
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={siteUrl} />
+		<meta property="og:image" content={`${siteUrl}/images/og-image.jpg`} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={`${siteUrl}/images/og-image.jpg`} />
+
+		<noscript>
+			<style>
+				[data-reveal] {
+					opacity: 1 !important;
+					transform: none !important;
+				}
+			</style>
+		</noscript>
 	</head>
 	<body>
 		<a class="skip-link" href="#main">Skip to content</a>
 		<slot />
+		<script>
+			const revealTargets = document.querySelectorAll('[data-reveal]');
+			const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			if (prefersReduced || !('IntersectionObserver' in window)) {
+				revealTargets.forEach((el) => el.classList.add('is-visible'));
+			} else {
+				const observer = new IntersectionObserver(
+					(entries) => {
+						for (const entry of entries) {
+							if (entry.isIntersecting) {
+								entry.target.classList.add('is-visible');
+								observer.unobserve(entry.target);
+							}
+						}
+					},
+					{ threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
+				);
+				revealTargets.forEach((el) => observer.observe(el));
+			}
+		</script>
 	</body>
 </html>

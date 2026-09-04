@@ -6,7 +6,7 @@ const links = [
 ];
 ---
 
-<footer class="footer" id="contact">
+<footer class="footer" id="contact" data-reveal>
 	<div class="container footer__inner">
 		<ul class="footer__links">
 			{links.map((link) => (
@@ -43,6 +43,11 @@ const links = [
 		font-size: var(--text-sm);
 		text-decoration: none;
 		color: var(--color-text-secondary);
+		transition: color var(--duration-fast) var(--ease-apple);
+	}
+
+	.footer__links a:hover {
+		color: var(--color-text-primary);
 	}
 
 	.footer__copy {
