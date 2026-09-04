@@ -1,0 +1,75 @@
+---
+const roles = [
+	{
+		title: 'Placeholder Role One',
+		org: 'Placeholder Company',
+		dates: '2026 – Present',
+		summary: 'Placeholder summary line for layout testing.',
+	},
+	{
+		title: 'Placeholder Role Two',
+		org: 'Placeholder Company',
+		dates: '2026',
+		summary: 'Placeholder summary line for layout testing.',
+	},
+	{
+		title: 'Placeholder Role Three',
+		org: 'Placeholder Company',
+		dates: '2025',
+		summary: 'Placeholder summary line for layout testing.',
+	},
+];
+---
+
+<section class="section" id="experience">
+	<div class="container">
+		<h2 class="section-heading">Experience</h2>
+		<ol class="timeline">
+			{roles.map((role) => (
+				<li class="timeline__item">
+					<p class="timeline__dates">{role.dates}</p>
+					<h3 class="timeline__title">{role.title}</h3>
+					<p class="timeline__org">{role.org}</p>
+					<p class="timeline__summary">{role.summary}</p>
+				</li>
+			))}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.timeline {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.timeline__item {
+		border-left: 1px solid var(--color-border);
+		padding-left: var(--space-6);
+	}
+
+	.timeline__dates {
+		font-size: var(--text-xs);
+		color: var(--color-text-secondary);
+		margin-bottom: var(--space-1);
+	}
+
+	.timeline__title {
+		font-size: var(--text-lg);
+		letter-spacing: var(--tracking-tight);
+	}
+
+	.timeline__org {
+		font-size: var(--text-sm);
+		color: var(--color-text-secondary);
+		margin-bottom: var(--space-2);
+	}
+
+	.timeline__summary {
+		color: var(--color-text-secondary);
+	}
+</style>

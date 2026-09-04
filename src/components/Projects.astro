@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import ProjectCardFeatured from './ProjectCardFeatured.astro';
+import ProjectCardSupporting from './ProjectCardSupporting.astro';
+import ProjectCardArchive from './ProjectCardArchive.astro';
+
+const allProjects = await getCollection('projects');
+const byTier = (tier: 'featured' | 'supporting' | 'archive') =>
+	allProjects
+		.filter((entry) => entry.data.tier === tier)
+		.sort((a, b) => a.data.order - b.data.order)
+		.map((entry) => entry.data);
+
+const featured = byTier('featured');
+const supporting = byTier('supporting');
+const archive = byTier('archive');
+---
+
+<section class="section" id="projects">
+	<div class="container">
+		<h2 class="section-heading">Projects</h2>
+
+		<div class="projects__tier projects__tier--featured">
+			{featured.map((project) => (
+				<ProjectCardFeatured project={project} />
+			))}
+		</div>
+
+		<div class="projects__tier projects__tier--supporting">
+			{supporting.map((project) => (
+				<ProjectCardSupporting project={project} />
+			))}
+		</div>
+
+		<div class="projects__tier projects__tier--archive">
+			{archive.map((project) => (
+				<ProjectCardArchive project={project} />
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.projects__tier {
+		display: grid;
+		gap: var(--space-6);
+	}
+
+	.projects__tier--featured {
+		margin-bottom: var(--space-16);
+	}
+
+	.projects__tier--supporting {
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		margin-bottom: var(--space-16);
+	}
+
+	.projects__tier--archive {
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	}
+</style>

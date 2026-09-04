@@ -1,0 +1,52 @@
+---
+const links = [
+	{ label: 'Email', href: 'mailto:malcolmclottey8@gmail.com' },
+	{ label: 'LinkedIn', href: 'https://linkedin.com/in/malcolmclottey' },
+	{ label: 'GitHub', href: 'https://github.com/malottey1' },
+];
+---
+
+<footer class="footer" id="contact">
+	<div class="container footer__inner">
+		<ul class="footer__links">
+			{links.map((link) => (
+				<li><a href={link.href}>{link.label}</a></li>
+			))}
+		</ul>
+		<p class="footer__copy">&copy; {new Date().getFullYear()} Malcolm Clottey</p>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		border-top: 1px solid var(--color-border);
+	}
+
+	.footer__inner {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--space-4);
+		padding-block: var(--space-8);
+	}
+
+	.footer__links {
+		display: flex;
+		gap: var(--space-6);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.footer__links a {
+		font-size: var(--text-sm);
+		text-decoration: none;
+		color: var(--color-text-secondary);
+	}
+
+	.footer__copy {
+		font-size: var(--text-xs);
+		color: var(--color-text-secondary);
+	}
+</style>

@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+	project: CollectionEntry<'projects'>['data'];
+}
+
+const { project } = Astro.props;
+---
+
+<article class="card-supporting">
+	<div class="card-supporting__media">
+		<img src={project.image} alt="" loading="lazy" />
+	</div>
+	<h3 class="card-supporting__title">{project.title}</h3>
+	{project.metric && <p class="card-supporting__metric">{project.metric}</p>}
+	<p class="card-supporting__description">{project.description}</p>
+	<ul class="card-supporting__stack">
+		{project.stack.map((tech) => (
+			<li>{tech}</li>
+		))}
+	</ul>
+	<div class="card-supporting__links">
+		{project.links.demo && <a href={project.links.demo}>Live demo</a>}
+		{project.links.repo && <a href={project.links.repo}>Repository</a>}
+	</div>
+</article>
+
+<style>
+	.card-supporting {
+		padding: var(--space-6);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-bg-elevated);
+	}
+
+	.card-supporting__media {
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: var(--color-bg-card);
+		margin-bottom: var(--space-4);
+		aspect-ratio: 16 / 10;
+	}
+
+	.card-supporting__media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.card-supporting__title {
+		font-size: var(--text-lg);
+		letter-spacing: var(--tracking-tight);
+		margin-bottom: var(--space-2);
+	}
+
+	.card-supporting__metric {
+		font-size: var(--text-base);
+		color: var(--color-accent);
+		margin-bottom: var(--space-2);
+	}
+
+	.card-supporting__description {
+		font-size: var(--text-sm);
+		color: var(--color-text-secondary);
+		margin-bottom: var(--space-4);
+	}
+
+	.card-supporting__stack {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		margin: 0 0 var(--space-4);
+		padding: 0;
+	}
+
+	.card-supporting__stack li {
+		font-size: var(--text-xs);
+		padding: var(--space-1) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		color: var(--color-text-secondary);
+	}
+
+	.card-supporting__links {
+		display: flex;
+		gap: var(--space-4);
+		font-size: var(--text-sm);
+	}
+
+	.card-supporting__links a {
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+</style>

@@ -1,0 +1,56 @@
+---
+const groups = [
+	{ label: 'Languages', items: ['Python', 'Java', 'JavaScript', 'TypeScript', 'C++', 'SQL', 'Dart', 'R'] },
+	{ label: 'Frameworks', items: ['React', 'Next.js', 'Node/Express', 'Django', 'Flask', 'FastAPI', 'Flutter', '.NET'] },
+	{ label: 'Databases', items: ['PostgreSQL', 'MySQL', 'MongoDB', 'Prisma', 'Firebase'] },
+	{ label: 'Cloud & DevOps', items: ['AWS (EC2, ECS)', 'Docker', 'GitHub Actions', 'CI/CD', 'Prometheus', 'Grafana', 'NGINX', 'Git'] },
+	{ label: 'AI/ML', items: ['RAG', 'LLM agents', 'OCR', 'PyTorch', 'XGBoost', 'Federated learning'] },
+];
+---
+
+<section class="section" id="skills">
+	<div class="container">
+		<h2 class="section-heading">Skills</h2>
+		<div class="skills">
+			{groups.map((group) => (
+				<div class="skills__group">
+					<h3 class="skills__label">{group.label}</h3>
+					<ul class="skills__list">
+						{group.items.map((item) => (
+							<li>{item}</li>
+						))}
+					</ul>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.skills {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: var(--space-8);
+	}
+
+	.skills__label {
+		font-size: var(--text-sm);
+		color: var(--color-text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin-bottom: var(--space-3);
+	}
+
+	.skills__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.skills__list li {
+		font-size: var(--text-base);
+	}
+</style>

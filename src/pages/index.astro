@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import ScanStrip from '../components/ScanStrip.astro';
+import Projects from '../components/Projects.astro';
+import Experience from '../components/Experience.astro';
+import Skills from '../components/Skills.astro';
+import Education from '../components/Education.astro';
+import About from '../components/About.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout
+	title="Malcolm Clottey — Software Engineer"
+	description="Software engineer building full-stack, AI-powered, and cloud-deployed systems."
+>
+	<Nav />
+	<main id="main">
+		<Hero />
+		<ScanStrip />
+		<Projects />
+		<Experience />
+		<Skills />
+		<Education />
+		<About />
+	</main>
+	<Footer />
+</Layout>

@@ -1,0 +1,50 @@
+---
+---
+
+<section class="hero" id="top">
+	<div class="container hero__inner">
+		<div class="hero__portrait" role="img" aria-label="Chrome head placeholder — hero visual arrives in a later stage"></div>
+		<h1 class="hero__name">Malcolm Clottey</h1>
+		<p class="hero__role">Software Engineer</p>
+		<p class="hero__value">Building full-stack, AI-powered, and cloud-deployed systems.</p>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding-block: var(--space-32) var(--space-16);
+	}
+
+	.hero__inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: var(--space-6);
+	}
+
+	.hero__portrait {
+		width: min(60vh, 46vw, 480px);
+		aspect-ratio: 1149 / 1369;
+		background: var(--color-bg-card);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+
+	.hero__name {
+		font-size: var(--text-4xl);
+		letter-spacing: var(--tracking-tighter);
+		line-height: var(--leading-tight);
+	}
+
+	.hero__role {
+		font-size: var(--text-lg);
+		color: var(--color-text-secondary);
+	}
+
+	.hero__value {
+		max-width: 32ch;
+		font-size: var(--text-base);
+		color: var(--color-text-secondary);
+	}
+</style>
