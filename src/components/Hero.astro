@@ -4,14 +4,8 @@
 <section class="hero" id="top">
 	<div class="container hero__inner">
 		<img class="hero__portrait" src="/images/chrome-head.webp" alt="" width="1050" height="1500" />
-		<h1 class="hero__name" id="heroName">
-			<span>Malcolm</span>
-			<span>Clottey</span>
-		</h1>
-		<p class="hero__role" id="heroRole">
-			<span>Software</span>
-			<span>Engineer</span>
-		</p>
+		<h1 class="hero__name">Malcolm Clottey</h1>
+		<p class="hero__role">Software Engineer</p>
 		<p class="hero__value">Building full-stack, AI-powered, and cloud-deployed systems.</p>
 		<p class="hero__scroll-cue" aria-hidden="true">↓</p>
 	</div>
@@ -20,7 +14,6 @@
 <style>
 	.hero {
 		padding-block: var(--space-32) var(--space-16);
-		overflow: hidden;
 	}
 
 	.hero__inner {
@@ -37,37 +30,17 @@
 		aspect-ratio: 1050 / 1500;
 		object-fit: contain;
 		filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.6));
-		animation: rise 1.4s var(--ease-apple) both;
 	}
 
 	.hero__name {
-		display: flex;
-		flex-direction: column;
-		font-family: var(--font-display-name);
 		font-size: var(--text-4xl);
-		line-height: 0.98;
-		font-weight: 400;
-		background: var(--chrome-text-gradient);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
-		-webkit-text-fill-color: transparent;
-		will-change: filter, opacity;
+		letter-spacing: var(--tracking-tighter);
+		line-height: var(--leading-tight);
 	}
 
 	.hero__role {
-		display: flex;
-		flex-direction: column;
-		font-family: var(--font-display-role);
-		font-size: var(--text-2xl);
-		line-height: 0.65;
-		padding-top: var(--space-4);
-		background: var(--chrome-text-gradient);
-		background-clip: text;
-		-webkit-background-clip: text;
-		color: transparent;
-		-webkit-text-fill-color: transparent;
-		will-change: filter, opacity;
+		font-size: var(--text-lg);
+		color: var(--color-text-secondary);
 	}
 
 	.hero__value {
@@ -97,53 +70,4 @@
 			transform: translateY(6px);
 		}
 	}
-
-	@keyframes rise {
-		from {
-			opacity: 0;
-			transform: translateY(48px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
 </style>
-
-<script>
-	const hero = document.querySelector<HTMLElement>('.hero');
-	const nameEl = document.getElementById('heroName');
-	const roleEl = document.getElementById('heroRole');
-	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-	if (hero && nameEl && roleEl && !reduceMotion) {
-		let ticking = false;
-
-		function update() {
-			ticking = false;
-			if (!hero) return;
-			const rect = hero.getBoundingClientRect();
-			// 0 = hero fully in view at top, 1 = scrolled through ~60% of the hero's height
-			const progress = Math.min(Math.max(-rect.top / (rect.height * 0.6), 0), 1);
-			const clarity = 1 - progress;
-			const blur = progress * 10;
-
-			for (const el of [nameEl, roleEl]) {
-				if (!el) continue;
-				el.style.filter = `blur(${blur}px)`;
-				el.style.opacity = String(clarity);
-			}
-		}
-
-		function onScroll() {
-			if (!ticking) {
-				ticking = true;
-				requestAnimationFrame(update);
-			}
-		}
-
-		window.addEventListener('scroll', onScroll, { passive: true });
-		window.addEventListener('resize', onScroll);
-		update();
-	}
-</script>
