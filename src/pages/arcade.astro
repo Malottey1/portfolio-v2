@@ -1,5 +1,27 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const TIER_ORDER = { featured: 0, supporting: 1, archive: 2 } as const;
+
+const allProjects = await getCollection('projects');
+const projects = allProjects
+	.slice()
+	.sort((a, b) => {
+		const tierDiff = TIER_ORDER[a.data.tier] - TIER_ORDER[b.data.tier];
+		return tierDiff !== 0 ? tierDiff : a.data.order - b.data.order;
+	})
+	.map((p) => ({
+		slug: p.id,
+		title: p.data.title,
+		description: p.data.description,
+		stack: p.data.stack,
+		dateStart: p.data.dateStart,
+		dateEnd: p.data.dateEnd,
+		role: p.data.role,
+		metric: p.data.metric,
+		links: p.data.links,
+	}));
 ---
 
 <Layout title="Arcade — Malcolm Clottey" description="A playable retro platformer version of my portfolio.">
@@ -48,10 +70,20 @@ import Layout from '../layouts/Layout.astro';
 	}
 </style>
 
+<script is:inline define:vars={{ projects }}>
+	window.__ARCADE_PROJECTS__ = projects;
+</script>
 <script>
 	import { startGame } from '../arcade/game';
+	import type { ProjectSummary } from '../arcade/project-types';
+
+	declare global {
+		interface Window {
+			__ARCADE_PROJECTS__: ProjectSummary[];
+		}
+	}
 
 	const canvas = document.getElementById('game') as HTMLCanvasElement | null;
 	const debugEl = document.getElementById('debug');
-	if (canvas) startGame(canvas, debugEl);
+	if (canvas) startGame(canvas, debugEl, window.__ARCADE_PROJECTS__ ?? []);
 </script>

@@ -1,4 +1,4 @@
-export type InputAction = 'left' | 'right' | 'jump';
+export type InputAction = 'left' | 'right' | 'jump' | 'view' | 'inventory' | 'confirm' | 'cancel';
 
 // Arrow keys and WASD both map to the same actions, plus Space for jump.
 const KEY_MAP: Record<string, InputAction> = {
@@ -9,6 +9,10 @@ const KEY_MAP: Record<string, InputAction> = {
 	ArrowUp: 'jump',
 	KeyW: 'jump',
 	Space: 'jump',
+	KeyV: 'view',
+	KeyI: 'inventory',
+	Enter: 'confirm',
+	Escape: 'cancel',
 };
 
 // Tracks held keys plus per-rendered-frame press/release edges. Edges are

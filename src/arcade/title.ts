@@ -43,9 +43,12 @@ export function drawTitleScreen(
 
 	if (blinkOn) {
 		ctx.font = 'bold 12px monospace';
-		outlinedText(ctx, 'PRESS SPACE TO START', cx, 148, '#f8f8f8');
+		outlinedText(ctx, 'PRESS SPACE TO START', cx, 130, '#f8f8f8');
 	}
 
+	ctx.font = 'bold 9px monospace';
+	outlinedText(ctx, 'V: VIEW ALL PROJECTS — NO PLAY REQUIRED', cx, 148, '#5c94fc');
+
 	ctx.font = '9px monospace';
-	outlinedText(ctx, 'ARROWS / WASD MOVE   SPACE / UP JUMP', cx, 168, '#f8f8f8');
+	outlinedText(ctx, 'ARROWS / WASD MOVE   SPACE / UP JUMP', cx, 166, '#f8f8f8');
 }

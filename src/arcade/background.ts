@@ -22,22 +22,39 @@ function drawHill(ctx: CanvasRenderingContext2D, cx: number, baseY: number, radi
 	ctx.fill();
 }
 
-export function drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number) {
+export function drawBackground(
+	ctx: CanvasRenderingContext2D,
+	width: number,
+	height: number,
+	cameraX = 0,
+) {
 	ctx.fillStyle = SKY;
 	ctx.fillRect(0, 0, width, height);
 
+	// Cheap parallax: distant layers move at a fraction of camera speed.
+	const farX = -cameraX * 0.25;
+	const nearX = -cameraX * 0.4;
+	const cloudX = -cameraX * 0.12;
+
 	ctx.fillStyle = HILL_FAR;
-	drawHill(ctx, 40, height - 8, 55);
-	drawHill(ctx, 170, height - 8, 70);
-	drawHill(ctx, 290, height - 8, 50);
+	for (const base of [40, 170, 290, 420, 550, 680, 810]) {
+		drawHill(ctx, base + farX, height - 8, 55);
+	}
 
 	ctx.fillStyle = HILL_NEAR;
-	drawHill(ctx, 90, height - 4, 45);
-	drawHill(ctx, 230, height - 4, 60);
-	drawHill(ctx, 320, height - 4, 40);
+	for (const base of [90, 230, 320, 470, 600, 740]) {
+		drawHill(ctx, base + nearX, height - 4, 45);
+	}
 
 	ctx.fillStyle = CLOUD;
-	drawCloud(ctx, 40, 28);
-	drawCloud(ctx, 170, 18);
-	drawCloud(ctx, 260, 34);
+	for (const [bx, by] of [
+		[40, 28],
+		[170, 18],
+		[260, 34],
+		[420, 24],
+		[560, 16],
+		[700, 30],
+	] as const) {
+		drawCloud(ctx, bx + cloudX, by);
+	}
 }
