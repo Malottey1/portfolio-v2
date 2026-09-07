@@ -1,0 +1,48 @@
+---
+---
+
+<section class="arcade-teaser" id="arcade-teaser" data-reveal>
+	<div class="container arcade-teaser__inner">
+		<p class="arcade-teaser__copy">There's also a playable version of this portfolio.</p>
+		<a class="arcade-teaser__button" href="/arcade">Enter the Arcade</a>
+	</div>
+</section>
+
+<style>
+	.arcade-teaser {
+		padding-block: var(--space-12);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.arcade-teaser__inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-4);
+		text-align: center;
+	}
+
+	.arcade-teaser__copy {
+		font-size: var(--text-sm);
+		color: var(--color-text-secondary);
+	}
+
+	.arcade-teaser__button {
+		display: inline-block;
+		padding: var(--space-3) var(--space-6);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		text-decoration: none;
+		font-size: var(--text-sm);
+		font-weight: 600;
+		color: var(--color-text-primary);
+		background: transparent;
+		transition: background var(--duration-fast) var(--ease-apple), border-color var(--duration-fast) var(--ease-apple);
+	}
+
+	.arcade-teaser__button:hover {
+		background: var(--color-text-primary);
+		color: var(--color-bg);
+		border-color: var(--color-text-primary);
+	}
+</style>
