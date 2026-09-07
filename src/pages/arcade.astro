@@ -1,0 +1,57 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Arcade — Malcolm Clottey" description="A playable retro platformer version of my portfolio.">
+	<main class="arcade" id="main">
+		<a class="arcade__exit" href="/">&larr; Back to site</a>
+		<canvas id="game" class="arcade__canvas" aria-label="Portfolio arcade game"></canvas>
+		<pre id="debug" class="arcade__debug"></pre>
+	</main>
+</Layout>
+
+<style>
+	.arcade {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		background: #000;
+	}
+
+	.arcade__canvas {
+		image-rendering: pixelated;
+		image-rendering: crisp-edges;
+	}
+
+	.arcade__exit {
+		position: fixed;
+		top: 16px;
+		left: 16px;
+		z-index: 10;
+		color: #fff;
+		font-family: monospace;
+		font-size: 14px;
+		text-decoration: none;
+		padding: 6px 10px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 4px;
+	}
+
+	.arcade__debug {
+		color: #7dff9a;
+		font-family: monospace;
+		font-size: 12px;
+		margin: 0;
+	}
+</style>
+
+<script>
+	import { startGame } from '../arcade/game';
+
+	const canvas = document.getElementById('game') as HTMLCanvasElement | null;
+	const debugEl = document.getElementById('debug');
+	if (canvas) startGame(canvas, debugEl);
+</script>
