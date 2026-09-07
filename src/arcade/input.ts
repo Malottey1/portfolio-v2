@@ -1,4 +1,4 @@
-export type InputAction = 'left' | 'right' | 'jump' | 'view' | 'inventory' | 'confirm' | 'cancel';
+export type InputAction = 'left' | 'right' | 'jump' | 'view' | 'inventory' | 'confirm' | 'cancel' | 'mute';
 
 // Arrow keys and WASD both map to the same actions, plus Space for jump.
 const KEY_MAP: Record<string, InputAction> = {
@@ -13,6 +13,7 @@ const KEY_MAP: Record<string, InputAction> = {
 	KeyI: 'inventory',
 	Enter: 'confirm',
 	Escape: 'cancel',
+	KeyM: 'mute',
 };
 
 // Tracks held keys plus per-rendered-frame press/release edges. Edges are
@@ -48,6 +49,19 @@ export class InputState {
 		this.held.delete(action);
 		this.queueUp.push(action);
 	};
+
+	// Lets non-keyboard input (on-screen touch controls) drive the exact
+	// same action set as the keyboard, so downstream code never needs to
+	// know which one produced an action.
+	setVirtual(action: InputAction, active: boolean) {
+		if (active) {
+			if (!this.held.has(action)) this.queueDown.push(action);
+			this.held.add(action);
+		} else {
+			if (this.held.has(action)) this.queueUp.push(action);
+			this.held.delete(action);
+		}
+	}
 
 	beginFrame() {
 		this.pressedThisFrame = new Set(this.queueDown);

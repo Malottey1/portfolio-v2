@@ -1,4 +1,4 @@
-import { GAME_WIDTH, PHYSICS } from './constants';
+import { PHYSICS } from './constants';
 import type { InputState } from './input';
 import type { Rect } from './level';
 
@@ -21,6 +21,13 @@ export class Player {
 	timeSinceGrounded = 999;
 	timeSinceJumpPressed = 999;
 
+	// One-frame event flags for the juice layer (squash/stretch, particles,
+	// screen shake) to react to, without the physics code knowing anything
+	// about presentation.
+	justJumped = false;
+	justLanded = false;
+	landedFallSpeed = 0;
+
 	constructor(x: number, y: number) {
 		this.x = x;
 		this.y = y;
@@ -30,7 +37,10 @@ export class Player {
 		return { x: this.x, y: this.y, width: this.width, height: this.height };
 	}
 
-	update(dt: number, input: InputState, platforms: Rect[]) {
+	update(dt: number, input: InputState, platforms: Rect[], worldWidth: number) {
+		this.justJumped = false;
+		this.justLanded = false;
+
 		const jumpHeld = input.held.has('jump');
 		const jumpPressed = input.pressedThisFrame.has('jump');
 		const jumpReleased = input.releasedThisFrame.has('jump');
@@ -60,6 +70,7 @@ export class Player {
 			this.grounded = false;
 			this.timeSinceJumpPressed = 999;
 			this.timeSinceGrounded = 999;
+			this.justJumped = true;
 		}
 
 		// --- variable jump height: cut the ascent short on early release ---
@@ -72,7 +83,7 @@ export class Player {
 		this.vy = Math.min(this.vy + gravity * dt, PHYSICS.maxFallSpeed);
 
 		this.moveAndCollide(dt, platforms);
-		this.x = Math.max(0, Math.min(this.x, GAME_WIDTH - this.width));
+		this.x = Math.max(0, Math.min(this.x, worldWidth - this.width));
 	}
 
 	private moveAndCollide(dt: number, platforms: Rect[]) {
@@ -84,6 +95,8 @@ export class Player {
 			this.vx = 0;
 		}
 
+		const wasGrounded = this.grounded;
+		const fallSpeedBeforeLanding = this.vy;
 		this.grounded = false;
 		this.y += this.vy * dt;
 		for (const p of platforms) {
@@ -95,6 +108,10 @@ export class Player {
 				this.y = p.y + p.height;
 			}
 			this.vy = 0;
+		}
+		if (this.grounded && !wasGrounded) {
+			this.justLanded = true;
+			this.landedFallSpeed = fallSpeedBeforeLanding;
 		}
 	}
 }

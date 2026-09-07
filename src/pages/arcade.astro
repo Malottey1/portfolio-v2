@@ -27,6 +27,7 @@ const projects = allProjects
 <Layout title="Arcade — Malcolm Clottey" description="A playable retro platformer version of my portfolio.">
 	<main class="arcade" id="main">
 		<a class="arcade__exit" href="/">&larr; Back to site</a>
+		<button class="arcade__mute" id="muteButton" type="button" aria-pressed="true">🔇 SOUND OFF</button>
 		<canvas id="game" class="arcade__canvas" aria-label="Portfolio arcade game"></canvas>
 		<pre id="debug" class="arcade__debug"></pre>
 	</main>
@@ -62,6 +63,22 @@ const projects = allProjects
 		border-radius: 4px;
 	}
 
+	.arcade__mute {
+		position: fixed;
+		top: 16px;
+		right: 16px;
+		z-index: 10;
+		color: #fff;
+		background: rgba(15, 15, 15, 0.7);
+		font-family: monospace;
+		font-size: 13px;
+		font-weight: bold;
+		padding: 6px 10px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
 	.arcade__debug {
 		color: #7dff9a;
 		font-family: monospace;
@@ -75,6 +92,7 @@ const projects = allProjects
 </script>
 <script>
 	import { startGame } from '../arcade/game';
+	import { audio } from '../arcade/audio';
 	import type { ProjectSummary } from '../arcade/project-types';
 
 	declare global {
@@ -86,4 +104,15 @@ const projects = allProjects
 	const canvas = document.getElementById('game') as HTMLCanvasElement | null;
 	const debugEl = document.getElementById('debug');
 	if (canvas) startGame(canvas, debugEl, window.__ARCADE_PROJECTS__ ?? []);
+
+	const muteButton = document.getElementById('muteButton') as HTMLButtonElement | null;
+	function syncMuteButton(muted: boolean) {
+		if (!muteButton) return;
+		muteButton.textContent = muted ? '🔇 SOUND OFF' : '🔊 SOUND ON';
+		muteButton.setAttribute('aria-pressed', String(muted));
+	}
+	muteButton?.addEventListener('click', () => syncMuteButton(audio.toggleMute()));
+	window.addEventListener('arcade-mute-change', (e) => {
+		syncMuteButton((e as CustomEvent<{ muted: boolean }>).detail.muted);
+	});
 </script>

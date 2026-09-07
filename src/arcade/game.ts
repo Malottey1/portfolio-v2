@@ -1,5 +1,5 @@
 import { GAME_WIDTH, GAME_HEIGHT, PHYSICS } from './constants';
-import { InputState } from './input';
+import { InputState, type InputAction } from './input';
 import { Player } from './player';
 import { generateLevel } from './level';
 import {
@@ -17,6 +17,10 @@ import { drawBackground } from './background';
 import { drawTitleScreen } from './title';
 import { drawCollectible, rectsOverlap } from './collectibles';
 import { drawProjectPanel, drawInventory, drawAllProjectsList } from './ui';
+import { Juice } from './juice';
+import { audio } from './audio';
+import { drawCrtOverlay } from './crt';
+import { createTouchControls } from './touch-controls';
 import type { ProjectSummary } from './project-types';
 
 const WALK_FRAME_TIME = 0.14;
@@ -32,6 +36,8 @@ export function startGame(
 	const ctx = canvas.getContext('2d');
 	if (!ctx) return;
 	ctx.imageSmoothingEnabled = false;
+
+	const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	canvas.width = GAME_WIDTH;
 	canvas.height = GAME_HEIGHT;
@@ -52,7 +58,14 @@ export function startGame(
 	const input = new InputState();
 	const player = new Player(level.spawn.x, level.spawn.y);
 	const collectedSlugs = new Set<string>();
+	const juice = new Juice(reducedMotion);
 	let currentProject: ProjectSummary | null = null;
+
+	const destroyTouchControls = createTouchControls((action: InputAction, active: boolean) =>
+		input.setVirtual(action, active),
+	);
+
+	audio.startAmbient();
 
 	let state: GameState = 'title';
 	let titleBlinkTimer = 0;
@@ -76,10 +89,10 @@ export function startGame(
 	function renderPlaying() {
 		if (!ctx) return;
 		const camX = cameraX();
-		drawBackground(ctx, GAME_WIDTH, GAME_HEIGHT, camX);
+		drawBackground(ctx, GAME_WIDTH, GAME_HEIGHT, reducedMotion ? 0 : camX);
 
 		ctx.save();
-		ctx.translate(-camX, 0);
+		ctx.translate(-camX + juice.shakeX, juice.shakeY);
 
 		for (const p of level.platforms) {
 			drawTiled(ctx, TILE_BY_TYPE[p.type ?? 'ground'], p.x, p.y, p.width, p.height);
@@ -96,7 +109,17 @@ export function startGame(
 				: PLAYER_IDLE;
 		const spriteX = player.x + player.width / 2 - sprite[0].length / 2;
 		const spriteY = player.y + player.height - sprite.length;
+
+		const anchorX = spriteX + sprite[0].length / 2;
+		const anchorY = spriteY + sprite.length;
+		ctx.save();
+		ctx.translate(anchorX, anchorY);
+		ctx.scale(juice.scaleX, juice.scaleY);
+		ctx.translate(-anchorX, -anchorY);
 		drawGrid(ctx, sprite, spriteX, spriteY, player.facing === -1);
+		ctx.restore();
+
+		juice.drawParticles(ctx);
 
 		ctx.restore();
 
@@ -104,9 +127,11 @@ export function startGame(
 		ctx.textBaseline = 'top';
 		ctx.font = 'bold 8px monospace';
 		ctx.fillStyle = '#0f0f0f';
-		ctx.fillText('I: INVENTORY', 9, 5);
+		ctx.fillText('I: INVENTORY   M: SOUND', 9, 5);
 		ctx.fillStyle = '#f8f8f8';
-		ctx.fillText('I: INVENTORY', 8, 4);
+		ctx.fillText('I: INVENTORY   M: SOUND', 8, 4);
+
+		drawCrtOverlay(ctx, GAME_WIDTH, GAME_HEIGHT);
 	}
 
 	function updateDebug() {
@@ -115,7 +140,7 @@ export function startGame(
 			`state=${state} ` +
 			`x=${player.x.toFixed(1)} y=${player.y.toFixed(1)} ` +
 			`vx=${player.vx.toFixed(1)} vy=${player.vy.toFixed(1)} ` +
-			`grounded=${player.grounded} collected=${collectedSlugs.size}/${projects.length}`;
+			`grounded=${player.grounded} collected=${collectedSlugs.size}/${projects.length} muted=${audio.muted}`;
 	}
 
 	const FIXED_DT = PHYSICS.fixedDt;
@@ -137,60 +162,97 @@ export function startGame(
 
 		input.beginFrame();
 
+		if (input.pressedThisFrame.has('mute')) audio.toggleMute();
+
 		if (state === 'title') {
 			titleBlinkTimer += delta;
 			if (titleBlinkTimer >= TITLE_BLINK_TIME) {
 				titleBlinkTimer -= TITLE_BLINK_TIME;
 				titleBlinkOn = !titleBlinkOn;
 			}
-			if (input.pressedThisFrame.has('jump')) resumePlaying();
-			else if (input.pressedThisFrame.has('view')) state = 'titleList';
+			if (input.pressedThisFrame.has('jump')) {
+				audio.playSelect();
+				resumePlaying();
+			} else if (input.pressedThisFrame.has('view')) {
+				audio.playSelect();
+				state = 'titleList';
+			}
 			if (ctx) drawTitleScreen(ctx, GAME_WIDTH, GAME_HEIGHT, titleBlinkOn);
 		} else if (state === 'titleList') {
-			if (input.pressedThisFrame.has('cancel')) state = 'title';
+			if (input.pressedThisFrame.has('cancel')) {
+				audio.playSelect();
+				state = 'title';
+			}
 			if (ctx) drawAllProjectsList(ctx, projects);
 		} else if (state === 'playing') {
 			accumulator += delta;
 			while (accumulator >= FIXED_DT) {
-				player.update(FIXED_DT, input, level.platforms);
+				const stepDt = juice.consumeHitStop(FIXED_DT);
+				if (stepDt > 0) {
+					player.update(stepDt, input, level.platforms, level.width);
 
-				for (const c of level.collectibles) {
-					if (!c.collected && rectsOverlap(player.rect, c)) {
-						c.collected = true;
-						collectedSlugs.add(c.projectSlug);
-						currentProject = projectsBySlug.get(c.projectSlug) ?? null;
-						if (currentProject) state = 'panel';
+					if (player.justJumped) {
+						juice.triggerJump();
+						audio.playJump();
+					}
+					if (player.justLanded) {
+						juice.triggerLand(
+							player.landedFallSpeed,
+							player.x + player.width / 2,
+							player.y + player.height,
+						);
+						if (player.landedFallSpeed > 250) audio.playLand();
+					}
+
+					for (const c of level.collectibles) {
+						if (!c.collected && rectsOverlap(player.rect, c)) {
+							c.collected = true;
+							collectedSlugs.add(c.projectSlug);
+							juice.triggerCollect(c.x + c.width / 2, c.y + c.height / 2);
+							audio.playCollect();
+							currentProject = projectsBySlug.get(c.projectSlug) ?? null;
+							if (currentProject) state = 'panel';
+						}
+					}
+
+					if (player.grounded && Math.abs(player.vx) > 5) {
+						walkTimer += FIXED_DT;
+						if (walkTimer >= WALK_FRAME_TIME) {
+							walkTimer -= WALK_FRAME_TIME;
+							walkFrame = walkFrame === 0 ? 1 : 0;
+						}
+					} else {
+						walkTimer = 0;
+						walkFrame = 0;
 					}
 				}
 
-				if (player.grounded && Math.abs(player.vx) > 5) {
-					walkTimer += FIXED_DT;
-					if (walkTimer >= WALK_FRAME_TIME) {
-						walkTimer -= WALK_FRAME_TIME;
-						walkFrame = walkFrame === 0 ? 1 : 0;
-					}
-				} else {
-					walkTimer = 0;
-					walkFrame = 0;
-				}
-
+				juice.update(FIXED_DT);
 				accumulator -= FIXED_DT;
 				if (state !== 'playing') break; // a collectible opened the panel mid-step
 			}
 			renderPlaying();
-			if (input.pressedThisFrame.has('inventory')) state = 'inventory';
+			if (input.pressedThisFrame.has('inventory')) {
+				audio.playSelect();
+				state = 'inventory';
+			}
 		} else if (state === 'panel') {
 			renderPlaying();
 			if (currentProject && ctx) drawProjectPanel(ctx, currentProject);
-			if (input.pressedThisFrame.has('cancel')) resumePlaying();
-			else if (input.pressedThisFrame.has('confirm') && currentProject) {
+			if (input.pressedThisFrame.has('cancel')) {
+				audio.playSelect();
+				resumePlaying();
+			} else if (input.pressedThisFrame.has('confirm') && currentProject) {
 				const link = currentProject.links.demo ?? currentProject.links.repo;
 				if (link) window.open(link, '_blank', 'noopener,noreferrer');
 			}
 		} else if (state === 'inventory') {
 			renderPlaying();
 			if (ctx) drawInventory(ctx, projects, collectedSlugs);
-			if (input.pressedThisFrame.has('cancel')) resumePlaying();
+			if (input.pressedThisFrame.has('cancel')) {
+				audio.playSelect();
+				resumePlaying();
+			}
 		}
 
 		updateDebug();
@@ -203,5 +265,6 @@ export function startGame(
 		cancelAnimationFrame(rafId);
 		window.removeEventListener('resize', resize);
 		input.destroy();
+		destroyTouchControls();
 	};
 }
