@@ -3,7 +3,7 @@ export interface Rect {
 	y: number;
 	width: number;
 	height: number;
-	type?: 'ground' | 'platform';
+	type?: 'ground' | 'platform' | 'crate';
 }
 
 // Placeholder-art test level: solid ground, a gap (tests running jumps and
@@ -15,6 +15,7 @@ export function createTestLevel(): Rect[] {
 		{ x: 140, y: 160, width: 60, height: 20, type: 'ground' },
 		{ x: 220, y: 108, width: 60, height: 12, type: 'platform' },
 		{ x: 280, y: 160, width: 40, height: 20, type: 'ground' },
+		{ x: 160, y: 144, width: 16, height: 16, type: 'crate' },
 	];
 }
 

@@ -71,6 +71,15 @@ export const PLAYER_WALK_2: PixelGrid = [
 	'...KP....PK...',
 ];
 
+// Jump pose: legs tuck up and in mid-air, shortening the silhouette by one
+// row — a classic, cheap way to sell "airborne" without a full new frame.
+export const PLAYER_JUMP: PixelGrid = [
+	...PLAYER_IDLE.slice(0, 19),
+	'.PPPP....PPPP.',
+	'..PPP....PPP..',
+	'..............',
+];
+
 export const TILE_GROUND: PixelGrid = [
 	'KKKKKKKKKKKKKKKK',
 	'KGGGGGGGGGGGGGGK',
@@ -99,6 +108,29 @@ export const TILE_PLATFORM: PixelGrid = [
 	'KRRRRRRRRRRRRRRK',
 	'KRREEEERREEEERRK',
 	'KRRRRRRRRRRRRRRK',
+	'KKKKKKKKKKKKKKKK',
+];
+
+// Original wooden crate — reuses the ground tile's own brown/dark-brown
+// pair rather than introducing new colors; the plank-seam pattern is what
+// makes it read as a distinct prop, not a new hue. Deliberately not a green
+// pipe or anything else evoking existing platformer IP.
+export const TILE_CRATE: PixelGrid = [
+	'KKKKKKKKKKKKKKKK',
+	'KNBBBBBBBBBBBBNK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KNNNNNNNNNNNNNNK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KNNNNNNNNNNNNNNK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KBBBBBBBBBBBBBBK',
+	'KNBBBBBBBBBBBBNK',
 	'KKKKKKKKKKKKKKKK',
 ];
 
