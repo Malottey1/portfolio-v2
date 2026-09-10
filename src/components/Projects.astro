@@ -16,23 +16,23 @@ const supporting = byTier('supporting');
 const archive = byTier('archive');
 ---
 
-<section class="section" id="projects" data-reveal>
+<section class="section" id="projects">
 	<div class="container">
 		<h2 class="section-heading">Projects</h2>
 
-		<div class="projects__tier projects__tier--featured">
+		<div class="projects__tier projects__tier--featured" data-reveal>
 			{featured.map((project) => (
 				<ProjectCardFeatured project={project} />
 			))}
 		</div>
 
-		<div class="projects__tier projects__tier--supporting">
+		<div class="projects__tier projects__tier--supporting" data-reveal>
 			{supporting.map((project) => (
 				<ProjectCardSupporting project={project} />
 			))}
 		</div>
 
-		<div class="projects__tier projects__tier--archive">
+		<div class="projects__tier projects__tier--archive" data-reveal>
 			{archive.map((project) => (
 				<ProjectCardArchive project={project} />
 			))}
