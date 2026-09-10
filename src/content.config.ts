@@ -13,6 +13,7 @@ const projects = defineCollection({
 		dateEnd: z.string(),
 		metric: z.string().optional(),
 		description: z.string(),
+		details: z.string().optional(),
 		stack: z.array(z.string()),
 		links: z.object({
 			repo: z.url().optional(),

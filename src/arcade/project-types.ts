@@ -2,6 +2,7 @@ export interface ProjectSummary {
 	slug: string;
 	title: string;
 	description: string;
+	details?: string;
 	stack: string[];
 	dateStart: string;
 	dateEnd: string;
