@@ -35,10 +35,13 @@ export function startGame(
 	canvas.height = GAME_HEIGHT;
 
 	function resize() {
-		const scale = Math.max(
-			1,
-			Math.floor(Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT)),
-		);
+		// GAME_WIDTH (320) is close to a phone's viewport width, so a
+		// floored integer scale collapses to 1x on virtually every phone —
+		// wasting up to ~45% of the available width. Stick to crisp integer
+		// steps once there's room for 2x or more (desktop/tablet), but allow
+		// a fractional scale below that so mobile actually fills the screen.
+		const rawScale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
+		const scale = rawScale >= 2 ? Math.floor(rawScale) : rawScale;
 		canvas.style.width = `${GAME_WIDTH * scale}px`;
 		canvas.style.height = `${GAME_HEIGHT * scale}px`;
 	}

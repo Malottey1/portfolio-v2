@@ -2,26 +2,6 @@
 ---
 
 <section class="hero" id="top">
-	<svg width="0" height="0" style="position: absolute;" aria-hidden="true">
-		<filter id="hero-goo">
-			<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
-			<feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -12" result="goo" />
-			<feComposite in="SourceGraphic" in2="goo" operator="atop" />
-		</filter>
-	</svg>
-
-	<div class="hero__fx" id="heroFx" aria-hidden="true">
-		<div class="hero__trail" id="heroTrail">
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-			<span class="hero__blob"></span>
-		</div>
-	</div>
-
 	<div class="container hero__inner">
 		<div class="hero__portrait-wrap" id="heroPortraitWrap">
 			<img class="hero__portrait" id="heroPortrait" src="/images/chrome-head.webp" alt="" width="1050" height="1500" />
@@ -39,39 +19,6 @@
 		position: relative;
 		padding-block: var(--space-32) var(--space-16);
 		overflow: hidden;
-	}
-
-	.hero__fx {
-		position: absolute;
-		inset: 0;
-		z-index: 2;
-		overflow: hidden;
-		pointer-events: none;
-	}
-
-	.hero__trail {
-		position: absolute;
-		inset: 0;
-		filter: url(#hero-goo);
-		mix-blend-mode: screen;
-		opacity: 0;
-		transition: opacity 0.4s var(--ease-apple);
-	}
-
-	.hero__trail.is-active {
-		opacity: 1;
-	}
-
-	.hero__blob {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 64px;
-		height: 64px;
-		margin: -32px 0 0 -32px;
-		border-radius: 50%;
-		background: radial-gradient(circle at 35% 30%, #ffffff 0%, #d1d1d6 35%, #8e8e93 65%, transparent 100%);
-		will-change: transform;
 	}
 
 	.hero__inner {
@@ -153,69 +100,12 @@
 
 <script>
 	const hero = document.getElementById('top');
-	const fx = document.getElementById('heroFx');
-	const trail = document.getElementById('heroTrail');
 	const portrait = document.getElementById('heroPortrait') as HTMLImageElement | null;
 	const portraitWrap = document.getElementById('heroPortraitWrap');
 	const canvasEl = document.getElementById('heroCanvas') as HTMLCanvasElement | null;
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	if (hero && fx && trail && portrait && portraitWrap && canvasEl && !reduceMotion) {
-		// --- liquid-chrome cursor trail ---
-		const blobs = Array.from(trail.querySelectorAll<HTMLElement>('.hero__blob'));
-		const points = blobs.map(() => ({ x: 0, y: 0 }));
-		let target = { x: 0, y: 0 };
-		let trailActive = false;
-		let trailVisible = false;
-		let trailRafId: number | null = null;
-
-		function distanceFalloff(x: number, y: number) {
-			const heroRect = hero!.getBoundingClientRect();
-			const pr = portrait!.getBoundingClientRect();
-			const cx = pr.left - heroRect.left + pr.width / 2;
-			const cy = pr.top - heroRect.top + pr.height / 2;
-			const dist = Math.hypot(x - cx, y - cy);
-			const innerRadius = Math.max(pr.width, pr.height) / 2 + 40;
-			const outerRadius = innerRadius + 260;
-			if (dist <= innerRadius) return 1;
-			if (dist >= outerRadius) return 0;
-			return 1 - (dist - innerRadius) / (outerRadius - innerRadius);
-		}
-
-		function renderTrail() {
-			trailRafId = null;
-			for (let i = 0; i < points.length; i++) {
-				const p = points[i];
-				const lead = i === 0 ? target : points[i - 1];
-				const ease = 0.32 - i * 0.02;
-				p.x += (lead.x - p.x) * Math.max(ease, 0.14);
-				p.y += (lead.y - p.y) * Math.max(ease, 0.14);
-				const scale = 1 - i * 0.11;
-				blobs[i].style.transform = `translate3d(${p.x}px, ${p.y}px, 0) scale(${scale})`;
-			}
-
-			trail!.style.opacity = String(trailVisible ? distanceFalloff(target.x, target.y) : 0);
-
-			if (trailActive) trailRafId = requestAnimationFrame(renderTrail);
-		}
-
-		function startTrailLoop() {
-			if (trailRafId === null) trailRafId = requestAnimationFrame(renderTrail);
-		}
-
-		function onMove(e: MouseEvent) {
-			const rect = hero!.getBoundingClientRect();
-			target = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-			trailVisible = true;
-			trail!.classList.add('is-active');
-			startTrailLoop();
-		}
-
-		function onLeave() {
-			trailVisible = false;
-			trail!.style.opacity = '0';
-		}
-
+	if (hero && portrait && portraitWrap && canvasEl && !reduceMotion) {
 		// --- WebGL liquid-metal ripple ---
 		// Displaces the portrait's own pixels radially from each click/tap —
 		// a decaying sine wave applied to the UV lookup, plus a brightness
@@ -410,28 +300,5 @@
 				rippleObserver.observe(hero);
 			}
 		}
-
-		const trailObserver = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (entry.isIntersecting) {
-						trailActive = true;
-						hero!.addEventListener('mousemove', onMove);
-						hero!.addEventListener('mouseleave', onLeave);
-					} else {
-						trailActive = false;
-						trailVisible = false;
-						hero!.removeEventListener('mousemove', onMove);
-						hero!.removeEventListener('mouseleave', onLeave);
-						if (trailRafId !== null) {
-							cancelAnimationFrame(trailRafId);
-							trailRafId = null;
-						}
-					}
-				}
-			},
-			{ threshold: 0 },
-		);
-		trailObserver.observe(hero);
 	}
 </script>
