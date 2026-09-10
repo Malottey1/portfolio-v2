@@ -209,6 +209,17 @@ export function startGame(
 						if (player.landedFallSpeed > 250) audio.playLand();
 					}
 
+					// Fell through a gap with nothing below to catch them —
+					// respawn at the start rather than free-falling forever.
+					// Collected progress is kept; only position resets.
+					if (player.y > GAME_HEIGHT) {
+						player.x = level.spawn.x;
+						player.y = level.spawn.y;
+						player.vx = 0;
+						player.vy = 0;
+						audio.playLand();
+					}
+
 					for (const c of level.collectibles) {
 						if (!c.collected && rectsOverlap(player.rect, c)) {
 							c.collected = true;
