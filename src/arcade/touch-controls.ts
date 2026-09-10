@@ -66,11 +66,13 @@ export function createTouchControls(
 	const jump = makeButton('▲', { right: '16px', bottom: '32px', width: '68px', height: '68px' });
 	const cancel = makeButton('X', { right: '96px', bottom: '32px' });
 	const inventory = makeButton('I', { right: '16px', bottom: '112px' });
+	const skills = makeButton('K', { right: '96px', bottom: '112px' });
 
 	bind(left, 'left');
 	bind(right, 'right');
 	bind(cancel, 'cancel');
 	bind(inventory, 'inventory');
+	bind(skills, 'skills');
 
 	// Jump also confirms (opens a project link) so one button covers both
 	// gameplay and menu contexts on touch.

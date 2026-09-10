@@ -14,71 +14,18 @@ export const PALETTE: Record<string, string> = {
 	E: '#7a2f22', // brick dark
 	S: '#a56b3c', // skin light
 	D: '#7a4a28', // skin dark
-	H: '#2b1d14', // hair
-	C: '#e8a33d', // shirt light
-	L: '#b8792a', // shirt dark
+	H: '#9a9a9e', // hair (gray)
+	C: '#3d4147', // shirt light (charcoal)
+	L: '#1c1e21', // shirt dark (charcoal)
 	Y: '#ffd43b', // accent yellow
 	P: '#52585f', // gray (pants/shoes/stone)
 };
 
 export type PixelGrid = string[];
 
-// Player, standing/idle pose. Big head, small body, thick outline, exaggerated
-// proportions per the brief — derived from the existing "programmer" sprite's
-// proportions and outline technique, redrawn with an afro instead of
-// glasses+short hair so it reads as the same identity as the chrome head.
-export const PLAYER_IDLE: PixelGrid = [
-	'......KK......',
-	'.....KHHK.....',
-	'....KHHHHK....',
-	'...KHHHHHHK...',
-	'..KHHHHHHHHK..',
-	'KHHHHHHHHHHHHK',
-	'KHHSSSSSSSSHHK',
-	'KHSSKSSSSKSSHK',
-	'KHSSSSSSSSSSHK',
-	'KHSSDDSSDDSSHK',
-	'KSSSSSSSSSSSSK',
-	'.KSSSSSSSSSSK.',
-	'KCCCCCCCCCCCCK',
-	'KCCLLCCCCLLCCK',
-	'KCCCCCCCCCCCCK',
-	'KCCCCCCCCCCCCK',
-	'KCCPPCCCCPPCCK',
-	'KCCCCCCCCCCCCK',
-	'KPPPP....PPPPK',
-	'KPPPP....PPPPK',
-	'KKPPP....PPPKK',
-	'.KKPP....PPKK.',
-];
-
-// Walk cycle: two frames, legs alternating. Reuses the idle torso/head
-// unchanged (only the leg rows differ) to keep the silhouette stable while
-// moving, per "readable at a glance while moving."
-export const PLAYER_WALK_1: PixelGrid = [
-	...PLAYER_IDLE.slice(0, 18),
-	'KPP.......PPPK',
-	'KPPP.....PPPPK',
-	'.KPP....PPPKK.',
-	'..KP....PKK...',
-];
-
-export const PLAYER_WALK_2: PixelGrid = [
-	...PLAYER_IDLE.slice(0, 18),
-	'KPPP.....PPPPK',
-	'KPPPP....PPPPK',
-	'.KKPP....PPK..',
-	'...KP....PK...',
-];
-
-// Jump pose: legs tuck up and in mid-air, shortening the silhouette by one
-// row — a classic, cheap way to sell "airborne" without a full new frame.
-export const PLAYER_JUMP: PixelGrid = [
-	...PLAYER_IDLE.slice(0, 19),
-	'.PPPP....PPPP.',
-	'..PPP....PPP..',
-	'..............',
-];
+// The player itself is drawn from a real image (see player-sprite.ts), not
+// a hand-authored grid — everything else in the arcade still uses this
+// fixed-palette pixel-art system.
 
 export const TILE_GROUND: PixelGrid = [
 	'KKKKKKKKKKKKKKKK',
@@ -132,6 +79,26 @@ export const TILE_CRATE: PixelGrid = [
 	'KBBBBBBBBBBBBBBK',
 	'KNBBBBBBBBBBBBNK',
 	'KKKKKKKKKKKKKKKK',
+];
+
+// HUD icon for the inventory/skills screens — a satchel with a clasp,
+// reusing the ground tile's brown/dark-brown pair so no new palette
+// colors are introduced.
+export const ICON_INVENTORY: PixelGrid = [
+	'...KKKKKKKK...',
+	'..KBBBBBBBKK..',
+	'.KBBBBBBBBBNK.',
+	'KBBBBBBBBBBNKK',
+	'KBBBBBBBBBBBNK',
+	'KBBBKKKKBBBBNK',
+	'KBBKNNNNKBBBNK',
+	'KBBKNNNNKBBBNK',
+	'KBBBKKKKBBBBNK',
+	'KBBBBBBBBBBBNK',
+	'KBBBBBBBBBBBNK',
+	'KBBBBBBBBBBBNK',
+	'KBBBBBBBBBBBNK',
+	'.KKKKKKKKKKKK.',
 ];
 
 export function drawGrid(

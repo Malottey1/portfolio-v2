@@ -2,21 +2,13 @@ import { GAME_WIDTH, GAME_HEIGHT, PHYSICS } from './constants';
 import { InputState, type InputAction } from './input';
 import { Player } from './player';
 import { generateLevel } from './level';
-import {
-	PLAYER_IDLE,
-	PLAYER_WALK_1,
-	PLAYER_WALK_2,
-	PLAYER_JUMP,
-	TILE_GROUND,
-	TILE_PLATFORM,
-	TILE_CRATE,
-	drawGrid,
-	drawTiled,
-} from './sprites';
+import { TILE_GROUND, TILE_PLATFORM, TILE_CRATE, drawTiled } from './sprites';
+import { getPlayerImage, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT } from './player-sprite';
 import { drawBackground } from './background';
 import { drawTitleScreen } from './title';
 import { drawCollectible, rectsOverlap } from './collectibles';
-import { drawProjectPanel, drawInventory, drawAllProjectsList } from './ui';
+import { drawProjectPanel, drawInventory, drawAllProjectsList, drawSkillsGrid } from './ui';
+import { skillGroups } from '../data/skills';
 import { Juice } from './juice';
 import { audio } from './audio';
 import { drawCrtOverlay } from './crt';
@@ -26,7 +18,7 @@ import type { ProjectSummary } from './project-types';
 const WALK_FRAME_TIME = 0.14;
 const TITLE_BLINK_TIME = 0.5;
 
-type GameState = 'title' | 'titleList' | 'playing' | 'panel' | 'inventory';
+type GameState = 'title' | 'titleList' | 'playing' | 'panel' | 'inventory' | 'skills';
 
 export function startGame(
 	canvas: HTMLCanvasElement,
@@ -70,6 +62,7 @@ export function startGame(
 	let state: GameState = 'title';
 	let titleBlinkTimer = 0;
 	let titleBlinkOn = true;
+	let skillsFromTitle = false;
 
 	let walkTimer = 0;
 	let walkFrame = 0;
@@ -100,23 +93,31 @@ export function startGame(
 		for (const c of level.collectibles) drawCollectible(ctx, c, elapsed);
 
 		const moving = Math.abs(player.vx) > 5 && player.grounded;
-		const sprite = !player.grounded
-			? PLAYER_JUMP
-			: moving
-				? walkFrame === 0
-					? PLAYER_WALK_1
-					: PLAYER_WALK_2
-				: PLAYER_IDLE;
-		const spriteX = player.x + player.width / 2 - sprite[0].length / 2;
-		const spriteY = player.y + player.height - sprite.length;
+		// Only one pose exists (see player-sprite.ts), so the walk cycle is
+		// faked with a 1px bob on the alternating frame timer instead of
+		// swapped leg frames.
+		const walkBob = moving && walkFrame === 1 ? -1 : 0;
+		const spriteX = player.x + player.width / 2 - PLAYER_SPRITE_WIDTH / 2;
+		const spriteY = player.y + player.height - PLAYER_SPRITE_HEIGHT + walkBob;
 
-		const anchorX = spriteX + sprite[0].length / 2;
-		const anchorY = spriteY + sprite.length;
+		const anchorX = spriteX + PLAYER_SPRITE_WIDTH / 2;
+		const anchorY = spriteY + PLAYER_SPRITE_HEIGHT;
 		ctx.save();
 		ctx.translate(anchorX, anchorY);
 		ctx.scale(juice.scaleX, juice.scaleY);
 		ctx.translate(-anchorX, -anchorY);
-		drawGrid(ctx, sprite, spriteX, spriteY, player.facing === -1);
+		const playerImg = getPlayerImage();
+		if (playerImg.complete && playerImg.naturalWidth > 0) {
+			if (player.facing === -1) {
+				ctx.save();
+				ctx.translate(spriteX + PLAYER_SPRITE_WIDTH, spriteY);
+				ctx.scale(-1, 1);
+				ctx.drawImage(playerImg, 0, 0, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT);
+				ctx.restore();
+			} else {
+				ctx.drawImage(playerImg, spriteX, spriteY, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT);
+			}
+		}
 		ctx.restore();
 
 		juice.drawParticles(ctx);
@@ -127,9 +128,9 @@ export function startGame(
 		ctx.textBaseline = 'top';
 		ctx.font = 'bold 8px monospace';
 		ctx.fillStyle = '#0f0f0f';
-		ctx.fillText('I: INVENTORY   M: SOUND', 9, 5);
+		ctx.fillText('I: INVENTORY   K: SKILLS   M: SOUND', 9, 5);
 		ctx.fillStyle = '#f8f8f8';
-		ctx.fillText('I: INVENTORY   M: SOUND', 8, 4);
+		ctx.fillText('I: INVENTORY   K: SKILLS   M: SOUND', 8, 4);
 
 		drawCrtOverlay(ctx, GAME_WIDTH, GAME_HEIGHT);
 	}
@@ -176,6 +177,10 @@ export function startGame(
 			} else if (input.pressedThisFrame.has('view')) {
 				audio.playSelect();
 				state = 'titleList';
+			} else if (input.pressedThisFrame.has('skills')) {
+				audio.playSelect();
+				skillsFromTitle = true;
+				state = 'skills';
 			}
 			if (ctx) drawTitleScreen(ctx, GAME_WIDTH, GAME_HEIGHT, titleBlinkOn);
 		} else if (state === 'titleList') {
@@ -235,6 +240,10 @@ export function startGame(
 			if (input.pressedThisFrame.has('inventory')) {
 				audio.playSelect();
 				state = 'inventory';
+			} else if (input.pressedThisFrame.has('skills')) {
+				audio.playSelect();
+				skillsFromTitle = false;
+				state = 'skills';
 			}
 		} else if (state === 'panel') {
 			renderPlaying();
@@ -252,6 +261,18 @@ export function startGame(
 			if (input.pressedThisFrame.has('cancel')) {
 				audio.playSelect();
 				resumePlaying();
+			}
+		} else if (state === 'skills') {
+			if (skillsFromTitle) {
+				if (ctx) drawTitleScreen(ctx, GAME_WIDTH, GAME_HEIGHT, titleBlinkOn);
+			} else {
+				renderPlaying();
+			}
+			if (ctx) drawSkillsGrid(ctx, skillGroups);
+			if (input.pressedThisFrame.has('cancel')) {
+				audio.playSelect();
+				if (skillsFromTitle) state = 'title';
+				else resumePlaying();
 			}
 		}
 

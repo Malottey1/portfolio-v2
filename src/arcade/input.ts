@@ -1,4 +1,13 @@
-export type InputAction = 'left' | 'right' | 'jump' | 'view' | 'inventory' | 'confirm' | 'cancel' | 'mute';
+export type InputAction =
+	| 'left'
+	| 'right'
+	| 'jump'
+	| 'view'
+	| 'inventory'
+	| 'skills'
+	| 'confirm'
+	| 'cancel'
+	| 'mute';
 
 // Arrow keys and WASD both map to the same actions, plus Space for jump.
 const KEY_MAP: Record<string, InputAction> = {
@@ -11,6 +20,7 @@ const KEY_MAP: Record<string, InputAction> = {
 	Space: 'jump',
 	KeyV: 'view',
 	KeyI: 'inventory',
+	KeyK: 'skills',
 	Enter: 'confirm',
 	Escape: 'cancel',
 	KeyM: 'mute',

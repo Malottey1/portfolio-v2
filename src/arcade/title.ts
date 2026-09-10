@@ -1,5 +1,5 @@
 import { drawBackground } from './background';
-import { PLAYER_IDLE, drawGrid } from './sprites';
+import { getPlayerImage, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT } from './player-sprite';
 
 function outlinedText(
 	ctx: CanvasRenderingContext2D,
@@ -39,7 +39,10 @@ export function drawTitleScreen(
 	ctx.font = '10px monospace';
 	outlinedText(ctx, 'A PLAYABLE PORTFOLIO', cx, 58, '#f8f8f8');
 
-	drawGrid(ctx, PLAYER_IDLE, cx - PLAYER_IDLE[0].length / 2, 68, false);
+	const playerImg = getPlayerImage();
+	if (playerImg.complete && playerImg.naturalWidth > 0) {
+		ctx.drawImage(playerImg, cx - PLAYER_SPRITE_WIDTH / 2, 68, PLAYER_SPRITE_WIDTH, PLAYER_SPRITE_HEIGHT);
+	}
 
 	if (blinkOn) {
 		ctx.font = 'bold 12px monospace';
@@ -47,7 +50,7 @@ export function drawTitleScreen(
 	}
 
 	ctx.font = 'bold 9px monospace';
-	outlinedText(ctx, 'V: VIEW ALL PROJECTS — NO PLAY REQUIRED', cx, 148, '#5c94fc');
+	outlinedText(ctx, 'V: PROJECTS   K: SKILLS — NO PLAY REQUIRED', cx, 148, '#5c94fc');
 
 	ctx.font = '9px monospace';
 	outlinedText(ctx, 'ARROWS / WASD MOVE   SPACE / UP JUMP', cx, 166, '#f8f8f8');
