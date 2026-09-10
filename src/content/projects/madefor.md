@@ -10,5 +10,5 @@ description: "Three-service architecture (storefront, admin panel, REST API) dep
 stack: ["React", "Node/Express", "Prisma", "PostgreSQL"]
 links:
   demo: "https://shopmadefor.com"
-image: "/images/placeholder.svg"
+image: "/images/projects/madefor.jpg"
 ---
