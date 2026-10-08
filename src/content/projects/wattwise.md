@@ -1,7 +1,7 @@
 ---
 title: "WattWise — AI Energy Management Platform"
-tier: supporting
-order: 4
+tier: featured
+order: 3
 dateStart: "Oct 2025"
 dateEnd: "Oct 2025"
 metric: "Infinity Code Hackathon winner — $25K Google Cloud grant"
