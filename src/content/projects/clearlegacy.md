@@ -1,6 +1,6 @@
 ---
 title: "ClearLegacy — AI Estate Plan Review for Financial Advisors"
-tier: supporting
+tier: featured
 order: 4
 role: "AI & AWS Lead — LPL Financial University Hackathon"
 dateStart: "Oct 2"

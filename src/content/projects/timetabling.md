@@ -1,7 +1,7 @@
 ---
 title: "Hybrid Algorithmic & AI-Based Timetabling System"
 tier: featured
-order: 4
+order: 5
 role: "Project Lead — Ashesi University"
 dateStart: "Jan 2025"
 dateEnd: "Apr 2025"

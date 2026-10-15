@@ -73,4 +73,15 @@ const href = project.links.demo ?? project.links.repo ?? '#';
 		border-radius: 999px;
 		color: var(--color-text-secondary);
 	}
+
+	@media (max-width: 600px) {
+		.card-archive {
+			padding: var(--space-3);
+		}
+
+		/* Two narrow columns: cap the tags so one long stack doesn't stretch the row. */
+		.card-archive__stack li:nth-child(n + 4) {
+			display: none;
+		}
+	}
 </style>

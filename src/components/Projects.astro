@@ -50,12 +50,38 @@ const archive = byTier('archive');
 		margin-bottom: var(--space-16);
 	}
 
+	/* Fixed column counts (not auto-fit) so a tier never ends on a lone
+	   orphan card: 3 supporting cards fill one row, 8 archive cards fill
+	   4 or 2 columns evenly. */
 	.projects__tier--supporting {
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		margin-bottom: var(--space-16);
 	}
 
 	.projects__tier--archive {
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	@media (max-width: 960px) {
+		.projects__tier--supporting {
+			grid-template-columns: 1fr;
+		}
+
+		.projects__tier--archive {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-4);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.projects__tier--featured,
+		.projects__tier--supporting {
+			gap: var(--space-4);
+			margin-bottom: var(--space-12);
+		}
+
+		.projects__tier--archive {
+			gap: var(--space-3);
+		}
 	}
 </style>

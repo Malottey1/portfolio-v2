@@ -118,9 +118,39 @@ const { project } = Astro.props;
 		text-decoration: underline;
 	}
 
+	/* Alternate the image side down the list for a zig-zag rhythm. */
+	.card-featured:nth-child(even) {
+		grid-template-columns: 1fr 1.1fr;
+	}
+
+	.card-featured:nth-child(even) .card-featured__media {
+		order: 2;
+	}
+
 	@media (max-width: 800px) {
-		.card-featured {
+		.card-featured,
+		.card-featured:nth-child(even) {
 			grid-template-columns: 1fr;
+			gap: var(--space-6);
+		}
+
+		.card-featured:nth-child(even) .card-featured__media {
+			order: 0;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.card-featured {
+			padding: var(--space-4);
+			gap: var(--space-4);
+		}
+
+		.card-featured__title {
+			font-size: var(--text-lg);
+		}
+
+		.card-featured__metric {
+			font-size: var(--text-base);
 		}
 	}
 </style>

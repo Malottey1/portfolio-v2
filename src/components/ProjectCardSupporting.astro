@@ -12,22 +12,26 @@ const { project } = Astro.props;
 	<div class="card-supporting__media">
 		<img src={project.image} alt="" loading="lazy" />
 	</div>
-	<h3 class="card-supporting__title">{project.title}</h3>
-	{project.metric && <p class="card-supporting__metric">{project.metric}</p>}
-	<p class="card-supporting__description">{project.description}</p>
-	<ul class="card-supporting__stack">
-		{project.stack.map((tech) => (
-			<li>{tech}</li>
-		))}
-	</ul>
-	<div class="card-supporting__links">
-		{project.links.demo && <a href={project.links.demo}>Live demo</a>}
-		{project.links.repo && <a href={project.links.repo}>Repository</a>}
+	<div class="card-supporting__body">
+		<h3 class="card-supporting__title">{project.title}</h3>
+		{project.metric && <p class="card-supporting__metric">{project.metric}</p>}
+		<p class="card-supporting__description">{project.description}</p>
+		<ul class="card-supporting__stack">
+			{project.stack.map((tech) => (
+				<li>{tech}</li>
+			))}
+		</ul>
+		<div class="card-supporting__links">
+			{project.links.demo && <a href={project.links.demo}>Live demo</a>}
+			{project.links.repo && <a href={project.links.repo}>Repository</a>}
+		</div>
 	</div>
 </article>
 
 <style>
 	.card-supporting {
+		display: flex;
+		flex-direction: column;
 		padding: var(--space-6);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
@@ -52,6 +56,12 @@ const { project } = Astro.props;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.card-supporting__body {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
 	}
 
 	.card-supporting__title {
@@ -90,6 +100,7 @@ const { project } = Astro.props;
 	}
 
 	.card-supporting__links {
+		margin-top: auto;
 		display: flex;
 		gap: var(--space-4);
 		font-size: var(--text-sm);
@@ -102,5 +113,25 @@ const { project } = Astro.props;
 
 	.card-supporting__links a:hover {
 		text-decoration: underline;
+	}
+
+	/* Tablet: one card per row, so lay it out sideways instead of a tall stack. */
+	@media (min-width: 601px) and (max-width: 960px) {
+		.card-supporting {
+			display: grid;
+			grid-template-columns: 2fr 3fr;
+			gap: var(--space-6);
+			align-items: center;
+		}
+
+		.card-supporting__media {
+			margin-bottom: 0;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.card-supporting {
+			padding: var(--space-4);
+		}
 	}
 </style>
